@@ -25,8 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { todo } from 'node:test'
 
-export type FilterType = "All" | "Done" | "Undone";
+export type FilterType = "All" | "Done" | "Undone" | "Search";
 
 function App() {
 
@@ -40,6 +41,10 @@ function App() {
 
   const [filteredToDo,setFilteredToDo] = useState<ItemProps[]>([])
   const [selectionFilter, setSelectionFilter] = useState<FilterType>('All')
+  const handleSearchFilter = (value:string) => {
+    setSelectionFilter("Search");
+    setFilteredToDo(prevItems => prevItems.map((item) => item.title.includes(value) ? {...item} : item));
+  }
   const handleFilterChange = (value:string) => {
     setSelectionFilter(value as FilterType);
     switch (value) {
@@ -52,9 +57,6 @@ function App() {
       case "All":
         setFilteredToDo(toDoList);
         break;
-        case "":
-          setFilteredToDo(toDoList);
-          break;
       }
   }
 
@@ -65,7 +67,7 @@ function App() {
         TODO LIST
       </h1>
       <div className="flex gap-2 my-4">
-        <Input placeholder='Search...'/>
+        <Input placeholder='Search...' onChange={(e) => handleSearchFilter(e.target.value)}/>
         <Select onValueChange={(value) => handleFilterChange(value)} defaultValue='All'>
           <SelectTrigger className="w-[180px] bg-black text-white">
             <SelectValue placeholder="Filter" className='text-white' />
@@ -78,7 +80,7 @@ function App() {
         </Select>
       </div>
       <div className='mt-4'>
-        <ListGroup items={selectionFilter ===  'All' ? toDoList : filteredToDo } onToggle={(idx) => setToDoList(prevItems => prevItems.map((item, i) => i===idx ? {...item, checkState:!item.checkState} : item ))} />
+        <ListGroup items={filteredToDo.length > 0 ? filteredToDo : toDoList } onToggle={(idx) => setToDoList(prevItems => prevItems.map((item, i) => i===idx ? {...item, checkState:!item.checkState} : item ))} />
       </div>
       <Dialog>
       <DialogTrigger>
@@ -92,8 +94,8 @@ function App() {
           <DialogDescription>
             <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col w-full gap-2'>
               <Input {...register('title')} placeholder='Title'/>
-            <Textarea {...register('description')} placeholder='Description'/>
-            <Button type='submit' className='px-5'>Save</Button>
+              <Textarea {...register('description')} placeholder='Description'/>
+              <Button type='submit' className='px-5'>Save</Button>
             </form>
           </DialogDescription>
         </DialogHeader>
